@@ -1,0 +1,7 @@
+python-dotenv
+pydantic
+langchain
+langchain-openai
+langchain-community
+pymupdf
+openai
