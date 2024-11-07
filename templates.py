@@ -30,10 +30,31 @@ Given this answer:
 Can you expand it and provide more details based on this original text:
 {text}
 
-Please provide a more detailed and comprehensive explanation."""
+Please provide a more detailed and comprehensive explanation. Do not miss any details."""
 
 
 EXTRACT_DETAILS_TEMPLATE = """
 Extract the details from the following text:
 {text}
+"""
+
+BACKGROUND_TEMPLATE = """
+Extract and summarize the background information from the following text in a detailed and organized manner:
+
+{text}
+
+1. **Detailed Background Explanation:**
+   - Summarize the background with a focus on the essential theories, frameworks, and context needed to understand the work.
+   - Highlight any historical or research context that influenced the current study.
+   - Explain key findings from prior research, identifying any knowledge gaps the paper addresses.
+
+2. **Prerequisite Knowledge:**
+   - List and briefly explain any prerequisite concepts, theories, or technical terminology needed to fully understand the background and findings.
+   - For each prerequisite, include a brief description or definition to ensure clarity.
+
+3. **Key Topics and Keywords:**
+   - Identify important keywords that are crucial for understanding the content of the paper.
+   - For each keyword, provide a brief explanation if needed, focusing on terms central to the topic, methodology, and domain of the research.
+
+=> Respond only with the requested information above. Ensure clarity, precision, and completeness to facilitate comprehensive understanding.
 """
