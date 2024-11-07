@@ -2,6 +2,8 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from templates import EXPAND_ANSWER_TEMPLATE, FIGURE_CONNECTION_TEMPLATE, FIGURE_INFO_TEMPLATE
 from config import DEFAULT_MODEL
+from concurrent.futures import ThreadPoolExecutor
+import concurrent.futures
 
 def query_document(document, prompt_template=None, model_name=DEFAULT_MODEL, pydantic_model=None, **prompt_variables):
     # Create LLM instance
@@ -22,34 +24,37 @@ def query_document(document, prompt_template=None, model_name=DEFAULT_MODEL, pyd
     return response
 
 def process_figure_answers(document, total_figures: int, model_name: str = DEFAULT_MODEL) -> dict:
-    """
-    Process and gather information and connections for each figure in the document.
-    
-    Args:
-        document: The loaded document to analyze
-        total_figures: Total number of figures to process
-        model_name: Name of the LLM model to use
-        
-    Returns:
-        dict: Dictionary containing Information and Connection data for each figure
-    """
+    """Process and gather information and connections for each figure in parallel"""
     try:
         answers = {i: {} for i in range(total_figures)}
         
-        for i in range(total_figures):
-            print(f"Processing Figure {i+1}...")
-            answers[i]["Information"] = query_document(
+        def process_single_figure(i):
+            info = query_document(
                 document, 
                 prompt_template=FIGURE_INFO_TEMPLATE, 
                 model_name=model_name, 
                 figure_number=i + 1
             )
-            answers[i]["Connection"] = query_document(
+            conn = query_document(
                 document,
                 prompt_template=FIGURE_CONNECTION_TEMPLATE,
                 model_name=model_name, 
                 figure_number=i + 1
             )
+            return i, {"Information": info, "Connection": conn}
+        
+        completed_figures = 0
+        
+        # Use ThreadPoolExecutor for parallel processing
+        with ThreadPoolExecutor() as executor:
+            future_to_figure = {executor.submit(process_single_figure, i): i 
+                              for i in range(total_figures)}
+            
+            for future in concurrent.futures.as_completed(future_to_figure):
+                i, result = future.result()
+                answers[i] = result
+                completed_figures += 1
+                print(f"Progress: {completed_figures}/{total_figures} figures completed (Figure {i+1} done)")
         
         return answers
     
@@ -58,43 +63,46 @@ def process_figure_answers(document, total_figures: int, model_name: str = DEFAU
         raise
 
 def expand_figure_answers(document, answers: dict, model_name: str = DEFAULT_MODEL) -> dict:
-    """
-    Expand the existing answers with additional context and information.
-    
-    Args:
-        document: The loaded document to analyze
-        answers: Dictionary containing the initial answers to expand
-        model_name: Name of the LLM model to use
-        
-    Returns:
-        dict: Dictionary containing expanded Information and Connection data
-    """
+    """Expand answers with additional context in parallel"""
     try:
         expanded_answers = {i: {} for i in range(len(answers))}
         
-        for i in range(len(answers)):
-            print(f"Expanding Answers for Figure {i+1}...")
-            expanded_answers[i]["Information"] = query_document(
+        def expand_single_figure(i):
+            info = query_document(
                 document,
                 prompt_template=EXPAND_ANSWER_TEMPLATE,
                 model_name=model_name,
                 answer=answers[i]["Information"].content,
                 text=document
             )
-            expanded_answers[i]["Connection"] = query_document(
+            conn = query_document(
                 document,
                 prompt_template=EXPAND_ANSWER_TEMPLATE,
                 model_name=model_name,
                 answer=answers[i]["Connection"].content,
                 text=document
             )
+            return i, {"Information": info, "Connection": conn}
+        
+        completed_expansions = 0
+        total_expansions = len(answers)
+
+        # Use ThreadPoolExecutor for parallel processing
+        with ThreadPoolExecutor() as executor:
+            future_to_figure = {executor.submit(expand_single_figure, i): i 
+                              for i in range(len(answers))}
             
+            for future in concurrent.futures.as_completed(future_to_figure):
+                i, result = future.result()
+                expanded_answers[i] = result
+                completed_expansions += 1
+                print(f"Progress: {completed_expansions}/{total_expansions} expansions completed (Figure {i+1} done)")
+        
         return expanded_answers
         
     except Exception as e:
         print(f"Error expanding answers: {str(e)}")
         raise
-
 
 def write_analysis_to_file(answers: dict, expanded_answers: dict, output_path: str) -> None:
     """
