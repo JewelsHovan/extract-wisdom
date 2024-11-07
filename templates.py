@@ -11,7 +11,7 @@ Analyze the following academic paper text and count the total number of figures 
 
 Text: {text}
 
-=> Count the total number of figures and respond with just the number."""
+=> Count the total number of figures (hint look for the last figure number) and respond with just the number."""
 
 
 FIGURE_CONNECTION_TEMPLATE = """
@@ -31,3 +31,9 @@ Can you expand it and provide more details based on this original text:
 {text}
 
 Please provide a more detailed and comprehensive explanation."""
+
+
+EXTRACT_DETAILS_TEMPLATE = """
+Extract the details from the following text:
+{text}
+"""

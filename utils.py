@@ -1,10 +1,13 @@
 from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from templates import EXPAND_ANSWER_TEMPLATE, FIGURE_CONNECTION_TEMPLATE, FIGURE_INFO_TEMPLATE
+from config import DEFAULT_MODEL
 
-def query_document(document, model_name, prompt_template, **prompt_variables):
+def query_document(document, prompt_template=None, model_name=DEFAULT_MODEL, pydantic_model=None, **prompt_variables):
     # Create LLM instance
     llm = ChatOpenAI(model_name=model_name)
+    if pydantic_model:
+        llm = llm.with_structured_output(pydantic_model)
 
     # Create prompt template
     prompt = PromptTemplate(template=prompt_template, input_variables=list(prompt_variables.keys()))
@@ -18,7 +21,7 @@ def query_document(document, model_name, prompt_template, **prompt_variables):
 
     return response
 
-def process_figure_answers(document, total_figures: int, model_name: str = "gpt-4o-mini") -> dict:
+def process_figure_answers(document, total_figures: int, model_name: str = DEFAULT_MODEL) -> dict:
     """
     Process and gather information and connections for each figure in the document.
     
@@ -37,14 +40,14 @@ def process_figure_answers(document, total_figures: int, model_name: str = "gpt-
             print(f"Processing Figure {i+1}...")
             answers[i]["Information"] = query_document(
                 document, 
-                model_name, 
-                FIGURE_INFO_TEMPLATE, 
+                prompt_template=FIGURE_INFO_TEMPLATE, 
+                model_name=model_name, 
                 figure_number=i + 1
             )
             answers[i]["Connection"] = query_document(
-                document, 
-                model_name, 
-                FIGURE_CONNECTION_TEMPLATE, 
+                document,
+                prompt_template=FIGURE_CONNECTION_TEMPLATE,
+                model_name=model_name, 
                 figure_number=i + 1
             )
         
@@ -54,7 +57,7 @@ def process_figure_answers(document, total_figures: int, model_name: str = "gpt-
         print(f"Error processing figures: {str(e)}")
         raise
 
-def expand_figure_answers(document, answers: dict, model_name: str = "gpt-4o-mini") -> dict:
+def expand_figure_answers(document, answers: dict, model_name: str = DEFAULT_MODEL) -> dict:
     """
     Expand the existing answers with additional context and information.
     
@@ -73,15 +76,15 @@ def expand_figure_answers(document, answers: dict, model_name: str = "gpt-4o-min
             print(f"Expanding Answers for Figure {i+1}...")
             expanded_answers[i]["Information"] = query_document(
                 document,
-                model_name,
-                EXPAND_ANSWER_TEMPLATE,
+                prompt_template=EXPAND_ANSWER_TEMPLATE,
+                model_name=model_name,
                 answer=answers[i]["Information"].content,
                 text=document
             )
             expanded_answers[i]["Connection"] = query_document(
                 document,
-                model_name,
-                EXPAND_ANSWER_TEMPLATE,
+                prompt_template=EXPAND_ANSWER_TEMPLATE,
+                model_name=model_name,
                 answer=answers[i]["Connection"].content,
                 text=document
             )
