@@ -9,7 +9,7 @@ A tool that automatically analyzes academic papers, extracting and explaining fi
 - Provides detailed analysis of each figure
 - Generates comprehensive explanations of how figures relate to the research
 - Parallel processing for efficient analysis of multiple figures
-- Structured output saved to text files
+- Structured output with separate files for metadata, background, and figure analysis
 
 ## Prerequisites
 
@@ -24,9 +24,9 @@ git clone [your-repo-url]
 cd [repo-name]
 ```
 
-2. Install required packages:
+2. Run the setup script:
 ```bash
-pip install -r requirements.txt
+python setup_project.py
 ```
 
 3. Create a `.env` file in the root directory and add your OpenAI API key:
@@ -40,10 +40,12 @@ OPENAI_API_KEY=your_api_key_here
 .
 ├── papers/             # Place your PDF papers here
 ├── output/            # Analysis results will be saved here
-├── paper_analyzer.py  # Main script
+├── paper_analyzer.py  # Main analysis script
 ├── utils.py          # Utility functions
 ├── config.py         # Configuration settings
-└── templates.py      # Prompt templates
+├── templates.py      # Prompt templates
+├── setup.py          # Package setup configuration
+└── setup_project.py  # Project setup script
 ```
 
 ## Usage
@@ -52,7 +54,7 @@ OPENAI_API_KEY=your_api_key_here
 
 2. Run the analyzer:
 ```bash
-python paper_analyzer.py --paper papers/your_paper.pdf
+python paper_analyzer.py papers/your_paper.pdf [--output-dir custom/output/path]
 ```
 
 The script will:
@@ -60,21 +62,24 @@ The script will:
 - Count the total number of figures
 - Analyze each figure in detail
 - Generate connections between figures and research content
-- Save the analysis in `output/figure_analysis_results.txt`
+- Analyze background information
+- Save the analysis in separate files under the output directory
 
-## Output
+## Output Structure
 
-The analysis will be saved in `output/figure_analysis_results.txt` with the following structure:
-- Paper details (title, authors, abstract)
-- For each figure:
-  - Detailed figure description
-  - Connection to research content
-  - Expanded analysis
+The analysis will be saved in the output directory with the following files:
+- `metadata.txt`: Paper details (title, authors, abstract, figure count)
+- `background.txt`: Detailed background analysis and prerequisites
+- `figures_analysis.txt`: For each figure:
+  - Initial analysis (Information and Connection)
+  - Expanded analysis with additional context
+  - Detailed relationships to research content
 
 ## Configuration
 
 You can modify the following settings in `config.py`:
-- `OUTPUT_DIR`: Directory for saving analysis results
+- `PAPER_DIR`: Directory for input PDF papers (default: "papers")
+- `OUTPUT_DIR`: Directory for saving analysis results (default: "output")
 - `DEFAULT_MODEL`: GPT model to use for analysis (default: "gpt-4o-mini")
 
 ## Contributing
