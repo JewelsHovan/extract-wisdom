@@ -5,3 +5,7 @@ output/
 papers/
 
 __pycache__/
+
+*.ipynb
+
+.DS_Store
