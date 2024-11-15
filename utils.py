@@ -161,13 +161,12 @@ def query_and_expand(
     return expanded_response
 
 
-def write_analysis_to_file(answers: dict, expanded_answers: dict = None, output_path: str = "analysis.txt") -> None:
+def write_analysis_to_file(answers: dict, output_path: str = "analysis.txt") -> None:
     """
     Write figure analysis results to a text file.
 
     Args:
-        answers: Dictionary containing the initial analysis
-        expanded_answers: Optional dictionary containing the expanded analysis
+        answers: Dictionary containing the analysis
         output_path: Path where the output file should be saved
     """
     try:
@@ -176,21 +175,9 @@ def write_analysis_to_file(answers: dict, expanded_answers: dict = None, output_
 
             for i in range(len(answers)):
                 f.write(f"### Figure {i+1} ###\n\n")
-
-                # Write initial analysis
-                f.write("Initial Analysis:\n")
-                f.write("-----------------\n")
                 f.write(f"Information:\n{answers[i]['Information'].content}\n\n")
                 f.write(f"Connection:\n{answers[i]['Connection'].content}\n\n")
-
-                # Write expanded analysis only if provided
-                if expanded_answers:
-                    f.write("Expanded Analysis:\n")
-                    f.write("-----------------\n")
-                    f.write(f"Information:\n{expanded_answers[i]['Information'].content}\n\n")
-                    f.write(f"Connection:\n{expanded_answers[i]['Connection'].content}\n\n")
-
-                f.write("\n" + "="*50 + "\n\n")  # Separator between figures
+                f.write("="*50 + "\n\n")  # Separator between figures
 
         print(f"Analysis written successfully to {output_path}")
 

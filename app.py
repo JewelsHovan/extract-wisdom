@@ -28,7 +28,7 @@ def api_key_form():
     """Display API key input form and handle authentication"""
     with st.sidebar:
         st.subheader("OpenAI API Key")
-
+# 
         # Show current status
         if st.session_state.is_authenticated:
             st.success("API Key authenticated!")
@@ -75,33 +75,33 @@ def analyze_paper():
 
     uploaded_file = st.file_uploader("Upload a PDF file", type="pdf")
     
-    if not uploaded_file:
-        return
+    if uploaded_file:
+        analyze_button = st.button("Analyze Paper")
+        if analyze_button:
+            try:
+                with st.spinner("Processing your file..."):
+                    # Create temp file with context manager
+                    with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_file:
+                        tmp_file.write(uploaded_file.getvalue())
+                        tmp_path = tmp_file.name
 
-    try:
-        with st.spinner("Processing your file..."):
-            # Create temp file with context manager
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_file:
-                tmp_file.write(uploaded_file.getvalue())
-                tmp_path = tmp_file.name
+                    analyzer = PaperAnalyzer(tmp_path, api_key=st.session_state.api_key)
+                    
+                    # Perform analysis
+                    analyzer.load_document()
+                    basic_info = analyzer.extract_basic_info()
+                    background = analyzer.analyze_background()
+                    figures = analyzer.analyze_figures()
 
-            analyzer = PaperAnalyzer(tmp_path, api_key=st.session_state.api_key)
-            
-            # Perform analysis
-            analyzer.load_document()
-            basic_info = analyzer.extract_basic_info()
-            background = analyzer.analyze_background()
-            figures = analyzer.analyze_figures()
+                    # Display results in tabs
+                    display_analysis_results(analyzer, basic_info, background, figures)
 
-            # Display results in tabs
-            display_analysis_results(analyzer, basic_info, background, figures)
-
-    except Exception as e:
-        st.error(f"Error processing file: {str(e)}")
-    finally:
-        # Cleanup temp file
-        if 'tmp_path' in locals():
-            os.unlink(tmp_path)
+            except Exception as e:
+                st.error(f"Error processing file: {str(e)}")
+            finally:
+                # Cleanup temp file
+                if 'tmp_path' in locals():
+                    os.unlink(tmp_path)
 
 def display_analysis_results(analyzer, basic_info, background, figures):
     """Display analysis results in organized tabs."""

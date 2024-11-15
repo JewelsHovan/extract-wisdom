@@ -90,7 +90,7 @@ class PaperAnalyzer:
         expanded_answers = expand_figure_answers(self.document, answers)
         
         figures_file = os.path.join(self.output_dir, "figures_analysis.txt")
-        write_analysis_to_file(answers, expanded_answers, figures_file)
+        write_analysis_to_file(expanded_answers, figures_file)
     
     def analyze(self):
         """Run the complete analysis pipeline."""
