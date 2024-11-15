@@ -20,7 +20,7 @@ class PaperDetails(BaseModel):
     authors: str = Field(description="Authors of the paper")
 
 class PaperAnalyzer:
-    def __init__(self, pdf_path: str, output_dir: str = OUTPUT_DIR):
+    def __init__(self, pdf_path: str, api_key: str, output_dir: str = OUTPUT_DIR):
         """Initialize PaperAnalyzer with pdf path and output directory."""
         self.pdf_path = pdf_path
         self.base_filename = os.path.splitext(os.path.basename(pdf_path))[0]
@@ -28,6 +28,9 @@ class PaperAnalyzer:
         self.document = None
         self.details_response = None
         self.figure_count_response = None
+
+        # Set OPENAI API key
+        os.environ["OPENAI_API_KEY"] = api_key
         
         # Create output directory structure
         os.makedirs(self.output_dir, exist_ok=True)
