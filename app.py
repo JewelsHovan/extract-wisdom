@@ -2,6 +2,7 @@ import streamlit as st
 import tempfile
 import os
 from paper_analyzer import PaperAnalyzer
+from config import DEFAULT_MODEL, AVAILABLE_MODELS
 
 
 def initialize_session_state():
@@ -73,6 +74,14 @@ def analyze_paper():
     if not api_key_form():
         return
 
+    # Add model selection dropdown
+    selected_model = st.selectbox(
+        "Select GPT Model",
+        options=AVAILABLE_MODELS,
+        index=AVAILABLE_MODELS.index(DEFAULT_MODEL),
+        help="Choose the GPT model to use for analysis"
+    )
+
     uploaded_file = st.file_uploader("Upload a PDF file", type="pdf")
     
     if uploaded_file:
@@ -80,12 +89,15 @@ def analyze_paper():
         if analyze_button:
             try:
                 with st.spinner("Processing your file..."):
-                    # Create temp file with context manager
                     with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_file:
                         tmp_file.write(uploaded_file.getvalue())
                         tmp_path = tmp_file.name
 
-                    analyzer = PaperAnalyzer(tmp_path, api_key=st.session_state.api_key)
+                    analyzer = PaperAnalyzer(
+                        tmp_path, 
+                        api_key=st.session_state.api_key,
+                        model_name=selected_model  # Pass selected model to analyzer
+                    )
                     
                     # Perform analysis
                     analyzer.load_document()

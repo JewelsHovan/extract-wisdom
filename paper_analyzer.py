@@ -20,7 +20,7 @@ class PaperDetails(BaseModel):
     authors: str = Field(description="Authors of the paper")
 
 class PaperAnalyzer:
-    def __init__(self, pdf_path: str, api_key: str, output_dir: str = OUTPUT_DIR):
+    def __init__(self, pdf_path: str, api_key: str, model_name: str = DEFAULT_MODEL, output_dir: str = OUTPUT_DIR):
         """Initialize PaperAnalyzer with pdf path and output directory."""
         self.pdf_path = pdf_path
         self.base_filename = os.path.splitext(os.path.basename(pdf_path))[0]
@@ -28,6 +28,7 @@ class PaperAnalyzer:
         self.document = None
         self.details_response = None
         self.figure_count_response = None
+        self.model_name = model_name
 
         # Set OPENAI API key
         os.environ["OPENAI_API_KEY"] = api_key
@@ -45,14 +46,14 @@ class PaperAnalyzer:
         self.figure_count_response = query_document(
             self.document,
             prompt_template=FIGURE_COUNT_TEMPLATE,
-            model_name=DEFAULT_MODEL,
+            model_name=self.model_name,
             pydantic_model=FiguresCount
         )
         
         self.details_response = query_document(
             self.document,
             prompt_template=EXTRACT_DETAILS_TEMPLATE,
-            model_name=DEFAULT_MODEL,
+            model_name=self.model_name,
             pydantic_model=PaperDetails
         )
     
@@ -71,7 +72,7 @@ class PaperAnalyzer:
         background_response = query_and_expand(
             self.document,
             prompt_template=BACKGROUND_TEMPLATE,
-            model_name=DEFAULT_MODEL,
+            model_name=self.model_name,
             text=self.document
         )
         
